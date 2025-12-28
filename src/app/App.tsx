@@ -1,16 +1,12 @@
-import { useState } from 'react'
+import { Explorer } from "../components/Explorer"
+import { Canvas } from "../components/Canvas"
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </>
+    <div className="flex h-screen gap-1 p-2">
+      <Explorer />
+      <Canvas />
+    </div>
   )
 }
 
