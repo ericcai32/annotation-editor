@@ -1,8 +1,19 @@
-function Canvas() {
+interface CanvasProps {
+  className?: string
+  importInputRef: React.RefObject<HTMLInputElement | null>
+}
+
+function Canvas({ className, importInputRef }: CanvasProps) {
   return (
-    <div className="h-full w-4/5 border">
-      <p className="flex h-full items-center justify-center text-center text-lg whitespace-pre">
-        Import images and annotations to begin, or{" "}
+    <div className={`flex items-center justify-center ${className}`}>
+      <p className="text-center text-lg whitespace-pre">
+        <span
+          className="cursor-pointer text-blue-500 hover:underline"
+          onClick={() => importInputRef.current?.click()}
+        >
+          Import files
+        </span>{" "}
+        to begin, or{" "}
         <span className="cursor-pointer text-blue-500 hover:underline">
           try the demo
         </span>

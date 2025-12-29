@@ -1,4 +1,9 @@
-function Explorer() {
+interface ExplorerProps {
+  className?: string
+  importInputRef: React.RefObject<HTMLInputElement | null>
+}
+
+function Explorer({ className, importInputRef }: ExplorerProps) {
   const files: string[] = [
     "index.html",
     "App.tsx",
@@ -33,20 +38,38 @@ function Explorer() {
   ]
 
   return (
-    <div className="flex h-full w-1/5 flex-col border">
-      <h1 className="p-2">Explorer</h1>
+    <div className={`flex flex-col ${className}`}>
+      <header className="flex items-center justify-between p-2">
+        <h1>Explorer</h1>
+        <div className="flex gap-2">
+          <input
+            type="file"
+            ref={importInputRef}
+            className="hidden"
+            accept="image/*, .txt"
+            multiple
+          />
+          <button
+            className="rounded bg-gray-200 p-1 hover:bg-gray-300"
+            title="Import"
+            onClick={() => importInputRef.current?.click()}
+          >
+            I
+          </button>
+          <button
+            className="rounded bg-gray-200 p-1 hover:bg-gray-300"
+            title="Export"
+          >
+            E
+          </button>
+        </div>
+      </header>
       <div className="overflow-auto">
-        {files.map((file) => (
-          <p className="cursor-pointer p-2 hover:bg-gray-100">{file}</p>
+        {files.map((file, index) => (
+          <p key={index} className="cursor-pointer p-2 hover:bg-gray-100">
+            {file}
+          </p>
         ))}
-      </div>
-      <div className="mt-auto flex justify-center gap-4 p-2">
-        <button className="rounded bg-gray-200 px-2 py-1 text-sm hover:bg-gray-300">
-          Import
-        </button>
-        <button className="rounded bg-gray-200 px-2 py-1 text-sm hover:bg-gray-300">
-          Export
-        </button>
       </div>
     </div>
   )
