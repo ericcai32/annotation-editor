@@ -2,14 +2,15 @@ interface CanvasProps {
   className?: string
   importInputRef: React.RefObject<HTMLInputElement | null>
   images: string[]
+  currIdx: number
 }
 
-function Canvas({ className, importInputRef, images }: CanvasProps) {
+function Canvas({ className, importInputRef, images, currIdx }: CanvasProps) {
   return (
     <div className={`relative flex items-center justify-center ${className}`}>
-      {images[0] ? (
+      {images[currIdx] ? (
         <img
-          src={images[0]}
+          src={images[currIdx]}
           className="absolute h-full w-full object-contain"
         />
       ) : (

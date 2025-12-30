@@ -116,7 +116,13 @@ function Explorer({
       </header>
       <div className="overflow-auto">
         {names.map((name, index) => (
-          <p key={index} className="cursor-pointer p-2 hover:bg-gray-100">
+          <p
+            className={`cursor-pointer p-2 ${
+              index === currIdx ? "bg-gray-200" : "hover:bg-gray-100"
+            }`}
+            key={index}
+            onClick={() => setCurrIdx(index)}
+          >
             {name}
           </p>
         ))}

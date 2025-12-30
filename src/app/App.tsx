@@ -20,13 +20,14 @@ function App() {
         setImages={setImages}
         annotations={annotations}
         setAnnotations={setAnnotations}
-        idx={currIdx}
-        setIdx={setCurrIdx}
+        currIdx={currIdx}
+        setCurrIdx={setCurrIdx}
       />
       <Canvas
         className="h-full w-4/5 border"
         importInputRef={importInputRef}
         images={images}
+        currIdx={currIdx}
       />
     </main>
   )
