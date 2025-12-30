@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react"
+
 interface ExplorerProps {
   className?: string
   importInputRef: React.RefObject<HTMLInputElement | null>
@@ -86,6 +88,15 @@ function Explorer({
     }
   }
 
+  const pRefs = useRef<HTMLParagraphElement[]>([])
+  useEffect(() => {
+    // pRefs.current[currIdx]?.focus()
+    pRefs.current[currIdx]?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    })
+  }, [currIdx])
+
   return (
     <div className={`flex flex-col ${className}`}>
       <header className="flex items-center justify-between p-2">
@@ -122,6 +133,9 @@ function Explorer({
             }`}
             key={index}
             onClick={() => setCurrIdx(index)}
+            ref={(el: HTMLParagraphElement) => {
+              pRefs.current[index] = el
+            }}
           >
             {name}
           </p>
