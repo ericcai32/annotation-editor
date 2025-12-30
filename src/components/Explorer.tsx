@@ -28,7 +28,31 @@ function Explorer({
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files: File[] = Array.from(e.target.files)
-      const oldNamesToContent = new Map<string, Map<string, string>>(
+      const newNamesToContent = new Map<string, Map<string, string>>()
+
+      for (const file of files) {
+        const noExtension = file.name.replace(/\.[^.]*$/, "")
+        if (!newNamesToContent.has(noExtension)) {
+          newNamesToContent.set(noExtension, new Map<string, string>())
+        }
+        if (file.type.startsWith("image/")) {
+          if (newNamesToContent.get(noExtension)?.has("image")) {
+            console.log(`${noExtension} already has an image`)
+          } else {
+            newNamesToContent
+              .get(noExtension)
+              ?.set("image", URL.createObjectURL(file))
+          }
+        } else if (file.type.startsWith("text/plain")) {
+          if (newNamesToContent.get(noExtension)?.has("annotation")) {
+            console.log(`${noExtension} already has an annotation`)
+          } else {
+            // TODO: handle annotations
+          }
+        }
+      }
+
+      const namesToContent = new Map<string, Map<string, string>>(
         names.map((name, index) => [
           name,
           new Map([
@@ -37,37 +61,12 @@ function Explorer({
           ]),
         ]),
       )
-      const newNamesToContent = new Map<string, Map<string, string>>()
-
-      for (const file of files) {
-        if (!newNamesToContent.has(file.name)) {
-          newNamesToContent.set(file.name, new Map<string, string>())
-        }
-        if (file.type.startsWith("image/")) {
-          newNamesToContent
-            .get(file.name)
-            ?.set("image", URL.createObjectURL(file))
-        } else if (file.type.startsWith("text/plain")) {
-          // TODO: handle annotations
-        }
-      }
-
-      const namesToContent = new Map<string, Map<string, string>>([
-        ...oldNamesToContent,
-      ])
 
       newNamesToContent.forEach((content, name) => {
         if (!namesToContent.has(name)) {
           namesToContent.set(name, content)
         } else {
-          if (!namesToContent.get(name)?.get("image")) {
-            namesToContent.get(name)?.set("image", content.get("image") ?? "")
-          }
-          if (!namesToContent.get(name)?.get("annotation")) {
-            namesToContent
-              .get(name)
-              ?.set("annotation", content.get("annotation") ?? "")
-          }
+          console.log(`${name} already exists`)
         }
       })
 
@@ -144,4 +143,5 @@ function Explorer({
     </div>
   )
 }
+
 export { Explorer }
