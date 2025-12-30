@@ -1,9 +1,16 @@
 interface ExplorerProps {
   className?: string
   importInputRef: React.RefObject<HTMLInputElement | null>
+  images: string[]
+  setImages: (images: string[]) => void
 }
 
-function Explorer({ className, importInputRef }: ExplorerProps) {
+function Explorer({
+  className,
+  importInputRef,
+  images,
+  setImages,
+}: ExplorerProps) {
   const files: string[] = [
     "index.html",
     "App.tsx",
@@ -37,15 +44,29 @@ function Explorer({ className, importInputRef }: ExplorerProps) {
     "package.json",
   ]
 
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const fileArray = Array.from(files)
+      const imageFiles = fileArray.filter((file) =>
+        file.type.startsWith("image/"),
+      )
+      const imageUrls = imageFiles.map((file) => URL.createObjectURL(file))
+      setImages(imageUrls)
+      console.log(imageUrls)
+    }
+  }
+
   return (
     <div className={`flex flex-col ${className}`}>
       <header className="flex items-center justify-between p-2">
-        <h1>Explorer</h1>
+        <h1>Files</h1>
         <div className="flex gap-2">
           <input
+            className="hidden"
             type="file"
             ref={importInputRef}
-            className="hidden"
+            onChange={handleImport}
             accept="image/*, .txt"
             multiple
           />
