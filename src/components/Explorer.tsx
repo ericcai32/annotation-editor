@@ -31,21 +31,22 @@ function Explorer({
       const newNamesToContent = new Map<string, Map<string, string>>()
 
       for (const file of files) {
-        const noExtension = file.name.replace(/\.[^.]*$/, "")
-        if (!newNamesToContent.has(noExtension)) {
-          newNamesToContent.set(noExtension, new Map<string, string>())
+        const newName = file.name.replace(/\.[^.]*$/, "")
+        if (!newNamesToContent.has(newName)) {
+          newNamesToContent.set(newName, new Map<string, string>())
         }
+
         if (file.type.startsWith("image/")) {
-          if (newNamesToContent.get(noExtension)?.has("image")) {
-            console.log(`${noExtension} already has an image`)
+          if (newNamesToContent.get(newName)?.has("image")) {
+            console.log(`${newName} already has an image`)
           } else {
             newNamesToContent
-              .get(noExtension)
+              .get(newName)
               ?.set("image", URL.createObjectURL(file))
           }
         } else if (file.type.startsWith("text/plain")) {
-          if (newNamesToContent.get(noExtension)?.has("annotation")) {
-            console.log(`${noExtension} already has an annotation`)
+          if (newNamesToContent.get(newName)?.has("annotation")) {
+            console.log(`${newName} already has an annotation`)
           } else {
             // TODO: handle annotations
           }
@@ -57,18 +58,34 @@ function Explorer({
           name,
           new Map([
             ["image", images[index]],
-            ["annotation", annotations[index]], // TODO: add annotations
+            ["annotation", annotations[index]],
           ]),
         ]),
       )
 
-      newNamesToContent.forEach((content, name) => {
+      for (const [name, content] of newNamesToContent) {
         if (!namesToContent.has(name)) {
           namesToContent.set(name, content)
-        } else {
-          console.log(`${name} already exists`)
+          continue
         }
-      })
+
+        if (content.get("image")) {
+          if (namesToContent.get(name)?.get("image")) {
+            console.log(`${name} already has an image`)
+          } else {
+            namesToContent.get(name)?.set("image", content.get("image") ?? "")
+          }
+        }
+        if (content.get("annotation")) {
+          if (namesToContent.get(name)?.get("annotation")) {
+            console.log(`${name} already has an annotation`)
+          } else {
+            namesToContent
+              .get(name)
+              ?.set("annotation", content.get("annotation") ?? "")
+          }
+        }
+      }
 
       const collator = new Intl.Collator(undefined, {
         numeric: true,
@@ -89,7 +106,6 @@ function Explorer({
 
   const pRefs = useRef<HTMLParagraphElement[]>([])
   useEffect(() => {
-    // pRefs.current[currIdx]?.focus()
     pRefs.current[currIdx]?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
