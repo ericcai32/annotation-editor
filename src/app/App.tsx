@@ -40,6 +40,7 @@ function App() {
       <Canvas
         className="h-full w-4/5 border"
         importInputRef={importInputRef}
+        names={names}
         images={images}
         currIdx={currIdx}
       />
