@@ -41,7 +41,9 @@ function App() {
         className="h-full w-4/5 border"
         importInputRef={importInputRef}
         names={names}
+        setNames={setNames}
         images={images}
+        setImages={setImages}
         annotations={annotations}
         setAnnotations={setAnnotations}
         currIdx={currIdx}
