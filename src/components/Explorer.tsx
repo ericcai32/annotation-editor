@@ -7,8 +7,8 @@ interface ExplorerProps {
   setNames: (names: string[]) => void
   images: string[]
   setImages: (images: string[]) => void
-  annotations: string[]
-  setAnnotations: (annotations: string[]) => void
+  annotations: number[][][]
+  setAnnotations: (annotations: number[][][]) => void
   currIdx: number
   setCurrIdx: (currIdx: number) => void
 }

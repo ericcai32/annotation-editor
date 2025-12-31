@@ -5,6 +5,8 @@ interface CanvasProps {
   importInputRef: React.RefObject<HTMLInputElement | null>
   names: string[]
   images: string[]
+  annotations: number[][][]
+  setAnnotations: (annotations: number[][][]) => void
   currIdx: number
 }
 
@@ -13,6 +15,8 @@ function Canvas({
   importInputRef,
   names,
   images,
+  annotations,
+  setAnnotations,
   currIdx,
 }: CanvasProps) {
   const [viewBox, setViewBox] = useState<string>("0 0 0 0")
@@ -25,6 +29,31 @@ function Canvas({
     }
   }, [images[currIdx]])
 
+  const drawAnnotations = () => {
+    return annotations[currIdx].map(([x, y, width, height], index) => (
+      <g key={index}>
+        <rect
+          width={width}
+          height={height}
+          x={x}
+          y={y}
+          fill="transparent"
+          stroke="#000000"
+          strokeWidth="0.4%"
+        />
+        <rect
+          width={width}
+          height={height}
+          x={x}
+          y={y}
+          fill="transparent"
+          stroke="#00ff00"
+          strokeWidth="0.2%"
+        />
+      </g>
+    ))
+  }
+
   return (
     <div
       className={`flex h-full w-full items-center justify-center ${className}`}
@@ -32,24 +61,7 @@ function Canvas({
       {names[currIdx] ? (
         <svg className="h-full w-full" viewBox={viewBox}>
           <image href={images[currIdx]} className="h-full w-full" />
-          <rect
-            width="200"
-            height="100"
-            x="5"
-            y="5"
-            fill="transparent"
-            stroke="#000000"
-            strokeWidth="0.4%"
-          />
-          <rect
-            width="200"
-            height="100"
-            x="5"
-            y="5"
-            fill="transparent"
-            stroke="#00ff00"
-            strokeWidth="0.2%"
-          />
+          {drawAnnotations()}
         </svg>
       ) : (
         <p className="text-center text-lg whitespace-pre">

@@ -6,7 +6,7 @@ function App() {
   const importInputRef = useRef<HTMLInputElement>(null)
   const [names, setNames] = useState<string[]>([])
   const [images, setImages] = useState<string[]>([])
-  const [annotations, setAnnotations] = useState<string[]>([])
+  const [annotations, setAnnotations] = useState<number[][][]>([])
   const [currIdx, setCurrIdx] = useState<number>(0)
 
   useEffect(() => {
@@ -42,6 +42,8 @@ function App() {
         importInputRef={importInputRef}
         names={names}
         images={images}
+        annotations={annotations}
+        setAnnotations={setAnnotations}
         currIdx={currIdx}
       />
     </main>
