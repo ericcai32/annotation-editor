@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react"
+import JSZip from "jszip"
+import { saveAs } from "file-saver"
 
 interface ExplorerProps {
   className?: string
@@ -25,6 +27,14 @@ function Explorer({
   currIdx,
   setCurrIdx,
 }: ExplorerProps) {
+  const pRefs = useRef<HTMLParagraphElement[]>([])
+  useEffect(() => {
+    pRefs.current[currIdx]?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    })
+  }, [currIdx])
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files: File[] = Array.from(e.target.files)
@@ -105,13 +115,39 @@ function Explorer({
     }
   }
 
-  const pRefs = useRef<HTMLParagraphElement[]>([])
-  useEffect(() => {
-    pRefs.current[currIdx]?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
+  const xywhToYolo = (index: number) => {
+    return new Promise<string[]>((resolve) => {
+      const img = new Image()
+      img.src = images[index]
+      img.onload = () => {
+        const yoloAnnotations = annotations[index].map(
+          ([x, y, width, height]) => {
+            const centerX = x + width / 2
+            const centerY = y + height / 2
+            const normalizedCenterX = centerX / img.width
+            const normalizedCenterY = centerY / img.height
+            const normalizedWidth = width / img.width
+            const normalizedHeight = height / img.height
+            return `0 ${normalizedCenterX} ${normalizedCenterY} ${normalizedWidth} ${normalizedHeight}`
+          },
+        )
+        resolve(yoloAnnotations)
+      }
     })
-  }, [currIdx])
+  }
+
+  const handleExport = async () => {
+    const zip = new JSZip()
+    for (const [index, name] of names.entries()) {
+      const yoloAnnotations = await xywhToYolo(index)
+      const blob = new Blob([yoloAnnotations.join("\n")], {
+        type: "text/plain",
+      })
+      zip.file(`labels/${name}.txt`, blob)
+    }
+    const zipBlob = await zip.generateAsync({ type: "blob" })
+    saveAs(zipBlob, "labels.zip")
+  }
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -136,6 +172,7 @@ function Explorer({
           <button
             className="rounded bg-gray-200 p-1 hover:bg-gray-300"
             title="Export"
+            onClick={handleExport}
           >
             E
           </button>
