@@ -165,14 +165,14 @@ function Explorer({
             title="Import"
             onClick={() => importInputRef.current?.click()}
           >
-            I
+            <span className="material-symbols-outlined">upload</span>
           </button>
           <button
             className="rounded bg-gray-200 p-1 hover:bg-gray-300"
             title="Export"
             onClick={handleExport}
           >
-            E
+            <span className="material-symbols-outlined">download</span>
           </button>
         </div>
       </header>
