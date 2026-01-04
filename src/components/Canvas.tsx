@@ -67,8 +67,8 @@ function Canvas({
   }
 
   const drawAnnotations = () => {
-    return annotations[currIdx].map(([x, y, width, height], index) => (
-      <g key={index}>
+    return annotations[currIdx].map(([x, y, width, height]) => (
+      <g key={`${x}-${y}-${width}-${height}`}>
         <rect
           width={width}
           height={height}

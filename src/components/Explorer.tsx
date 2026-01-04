@@ -77,7 +77,7 @@ function Explorer({
       }
 
       const namesToContent = new Map<string, [string, number[][]]>(
-        names.map((name, index) => [name, [images[index], annotations[index]]]),
+        names.map((name, i) => [name, [images[i], annotations[i]]]),
       )
 
       for (const [name, content] of newNamesToContent) {
@@ -115,32 +115,30 @@ function Explorer({
     }
   }
 
-  const xywhToYolo = (index: number) => {
+  const xywhToYolo = (idx: number) => {
     return new Promise<string[]>((resolve) => {
       const img = new Image()
-      img.src = images[index]
+      img.src = images[idx]
       img.onload = () => {
-        const yoloAnnotations = annotations[index].map(
-          ([x, y, width, height]) => {
-            const centerX = x + width / 2
-            const centerY = y + height / 2
-            const normalizedCenterX = centerX / img.width
-            const normalizedCenterY = centerY / img.height
-            const normalizedWidth = width / img.width
-            const normalizedHeight = height / img.height
-            return `0 ${normalizedCenterX} ${normalizedCenterY} ${normalizedWidth} ${normalizedHeight}`
-          },
-        )
-        resolve(yoloAnnotations)
+        const yoloAnnotation = annotations[idx].map(([x, y, width, height]) => {
+          const centerX = x + width / 2
+          const centerY = y + height / 2
+          const normalizedCenterX = centerX / img.width
+          const normalizedCenterY = centerY / img.height
+          const normalizedWidth = width / img.width
+          const normalizedHeight = height / img.height
+          return `0 ${normalizedCenterX} ${normalizedCenterY} ${normalizedWidth} ${normalizedHeight}`
+        })
+        resolve(yoloAnnotation)
       }
     })
   }
 
   const handleExport = async () => {
     const zip = new JSZip()
-    for (const [index, name] of names.entries()) {
-      const yoloAnnotations = await xywhToYolo(index)
-      const blob = new Blob([yoloAnnotations.join("\n")], {
+    for (const [i, name] of names.entries()) {
+      const yoloAnnotation = await xywhToYolo(i)
+      const blob = new Blob([yoloAnnotation.join("\n")], {
         type: "text/plain",
       })
       zip.file(`labels/${name}.txt`, blob)
@@ -179,15 +177,15 @@ function Explorer({
         </div>
       </header>
       <div className="overflow-auto">
-        {names.map((name, index) => (
+        {names.map((name, i) => (
           <p
             className={`cursor-pointer p-2 ${
-              index === currIdx ? "bg-gray-200" : "hover:bg-gray-100"
+              i === currIdx ? "bg-gray-200" : "hover:bg-gray-100"
             }`}
-            key={index}
-            onClick={() => setCurrIdx(index)}
+            key={name}
+            onClick={() => setCurrIdx(i)}
             ref={(el: HTMLParagraphElement) => {
-              pRefs.current[index] = el
+              pRefs.current[i] = el
             }}
           >
             {name}
