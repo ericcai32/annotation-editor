@@ -24,9 +24,9 @@ function App() {
   }, [images.length])
 
   return (
-    <main className="flex h-screen w-screen gap-1 p-2">
+    <main className="flex h-screen w-screen overflow-hidden bg-zinc-950 text-zinc-200">
       <Explorer
-        className="h-full w-1/5 border"
+        className="w-1/5 min-w-[250px]"
         importInputRef={importInputRef}
         names={names}
         setNames={setNames}
@@ -38,7 +38,7 @@ function App() {
         setCurrIdx={setCurrIdx}
       />
       <Canvas
-        className="h-full w-4/5 border"
+        className="h-full w-full"
         importInputRef={importInputRef}
         names={names}
         setNames={setNames}

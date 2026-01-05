@@ -148,10 +148,14 @@ function Explorer({
   }
 
   return (
-    <div className={`flex flex-col ${className}`}>
-      <header className="flex items-center justify-between p-2">
-        <h1>Files</h1>
-        <div className="flex gap-2">
+    <div
+      className={`flex flex-col border-r border-zinc-800 bg-zinc-900 ${className}`}
+    >
+      <header className="flex items-center justify-between border-b border-zinc-800 p-4">
+        <h1 className="text-base font-semibold tracking-wider text-zinc-400 uppercase">
+          Files
+        </h1>
+        <div className="flex gap-1">
           <input
             className="hidden"
             type="file"
@@ -161,26 +165,32 @@ function Explorer({
             multiple
           />
           <button
-            className="rounded bg-gray-200 p-1 hover:bg-gray-300"
+            className="flex items-center justify-center rounded p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
             title="Import"
             onClick={() => importInputRef.current?.click()}
           >
-            <span className="material-symbols-outlined">upload</span>
+            <span className="material-symbols-outlined text-[20px]">
+              upload
+            </span>
           </button>
           <button
-            className="rounded bg-gray-200 p-1 hover:bg-gray-300"
+            className="flex items-center justify-center rounded p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
             title="Export"
             onClick={handleExport}
           >
-            <span className="material-symbols-outlined">download</span>
+            <span className="material-symbols-outlined text-[20px]">
+              download
+            </span>
           </button>
         </div>
       </header>
-      <div className="overflow-auto">
+      <div className="flex-1 overflow-y-auto p-2">
         {names.map((name, i) => (
           <p
-            className={`cursor-pointer p-2 ${
-              i === currIdx ? "bg-gray-200" : "hover:bg-gray-100"
+            className={`cursor-pointer rounded-md px-3 py-2 text-sm transition-colors ${
+              i === currIdx
+                ? "bg-orange-500/10 font-medium text-orange-400"
+                : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
             }`}
             key={name}
             onClick={() => setCurrIdx(i)}

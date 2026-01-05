@@ -276,7 +276,7 @@ function Canvas({
 
   return (
     <div
-      className={`flex h-full w-full items-center justify-center ${className}`}
+      className={`flex items-center justify-center bg-zinc-950 ${className}`}
     >
       {names[currIdx] ? (
         <svg
@@ -291,33 +291,35 @@ function Canvas({
           {drawAnnotations()}
         </svg>
       ) : (
-        <p className="text-center text-lg whitespace-pre">
-          <span className="font-bold">Controls:</span>
-          <br />
-          Left-click and drag to draw a new bounding box.
-          <br />
-          Right-click a bounding box to remove it.
-          <br />
-          Drag the middle of a bounding box to move it.
-          <br />
-          Drag an edge or corner of a bounding box to resize it.
-          <br />
-          <br />
-          <span
-            className="cursor-pointer text-blue-500 hover:underline"
-            onClick={() => importInputRef.current?.click()}
-          >
-            Import files
-          </span>{" "}
-          to begin, or{" "}
-          <span
-            className="cursor-pointer text-blue-500 hover:underline"
-            onClick={onDemoClick}
-          >
-            try the demo
-          </span>
-          .
-        </p>
+        <div className="text-center text-zinc-500">
+          <p className="mb-8 text-lg">
+            <span className="font-semibold text-zinc-300">Controls:</span>
+            <br />
+            Left-click and drag to draw a new bounding box.
+            <br />
+            Right-click a bounding box to remove it.
+            <br />
+            Drag the middle of a bounding box to move it.
+            <br />
+            Drag an edge or corner of a bounding box to resize it.
+          </p>
+          <p className="text-sm">
+            <span
+              className="cursor-pointer text-orange-400 transition-colors hover:text-orange-300"
+              onClick={() => importInputRef.current?.click()}
+            >
+              Import files
+            </span>{" "}
+            to begin, or{" "}
+            <span
+              className="cursor-pointer text-orange-400 transition-colors hover:text-orange-300"
+              onClick={onDemoClick}
+            >
+              try the demo
+            </span>
+            .
+          </p>
+        </div>
       )}
     </div>
   )
