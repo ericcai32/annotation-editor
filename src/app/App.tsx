@@ -23,6 +23,18 @@ function App() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [images.length])
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
+  }, [])
+
   return (
     <main className="flex h-screen w-screen overflow-hidden bg-zinc-950 text-zinc-200">
       <Explorer
