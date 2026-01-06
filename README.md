@@ -1,3 +1,7 @@
-# Computer Vision Annotation Editor
+# Image Annotation Editor for Computer Vision
 
-A web-based computer vision annotation editor built with React and Tailwind CSS
+A web-based image annotation editor for computer vision built with React and Tailwind CSS
+
+## Demo
+
+https://ericcai.com/annotation-editor
