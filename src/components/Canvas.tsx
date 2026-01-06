@@ -100,7 +100,7 @@ function Canvas({
     return coords
   }
 
-  const isInbox = (x: number, y: number, box: boundingBox): boolean => {
+  const isInBox = (x: number, y: number, box: boundingBox): boolean => {
     return (
       x >= box.x &&
       x <= box.x + box.width &&
@@ -110,7 +110,7 @@ function Canvas({
   }
 
   const getHandle = (x: number, y: number, box: boundingBox) => {
-    const threshold = 5 // sensitivity for grabbing handles
+    const threshold = 5
 
     if (Math.abs(x - box.x) < threshold && Math.abs(y - box.y) < threshold) {
       return "top-left"
@@ -161,7 +161,7 @@ function Canvas({
     ) {
       return "right"
     }
-    if (isInbox(x, y, box)) {
+    if (isInBox(x, y, box)) {
       return "middle"
     }
     return null
@@ -173,7 +173,7 @@ function Canvas({
     }
 
     const newAnnotations = [...annotations]
-    const newBox = newAnnotations[currIdx][draggedBoxIdx]
+    const newBox = { ...annotations[currIdx][draggedBoxIdx] }
 
     if (handle === "top-left") {
       newBox.width = newBox.width + (newBox.x - x)
@@ -206,6 +206,7 @@ function Canvas({
       newBox.y = y - offset.y
     }
 
+    newAnnotations[currIdx][draggedBoxIdx] = newBox
     setAnnotations(newAnnotations)
   }
 
@@ -237,7 +238,7 @@ function Canvas({
 
   const removeAt = (x: number, y: number) => {
     const idxToRemove = annotations[currIdx].findIndex((box) =>
-      isInbox(x, y, box),
+      isInBox(x, y, box),
     )
     if (idxToRemove !== -1) {
       const newAnnotations = [...annotations]
