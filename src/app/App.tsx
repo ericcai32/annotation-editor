@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react"
 import { Explorer } from "../components/Explorer"
 import { Canvas } from "../components/Canvas"
+import type { boundingBox, dimensions } from "../types/index"
 
 function App() {
   const importInputRef = useRef<HTMLInputElement>(null)
   const [names, setNames] = useState<string[]>([])
   const [images, setImages] = useState<string[]>([])
-  const [annotations, setAnnotations] = useState<number[][][]>([])
+  const [imageDimensions, setImageDimensions] = useState<dimensions[]>([])
+  const [annotations, setAnnotations] = useState<boundingBox[][]>([])
   const [currIdx, setCurrIdx] = useState<number>(0)
 
   useEffect(() => {
@@ -44,6 +46,8 @@ function App() {
         setNames={setNames}
         images={images}
         setImages={setImages}
+        imageDimensions={imageDimensions}
+        setImageDimensions={setImageDimensions}
         annotations={annotations}
         setAnnotations={setAnnotations}
         currIdx={currIdx}
@@ -56,6 +60,8 @@ function App() {
         setNames={setNames}
         images={images}
         setImages={setImages}
+        imageDimensions={imageDimensions}
+        setImageDimensions={setImageDimensions}
         annotations={annotations}
         setAnnotations={setAnnotations}
         currIdx={currIdx}

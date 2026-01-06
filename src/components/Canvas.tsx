@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import type { boundingBox, dimensions, coords } from "../types/index"
 import frame_1778 from "../assets/demo-files/frame_1778.jpg"
 import frame_2087 from "../assets/demo-files/frame_2087.jpg"
 import frame_2133 from "../assets/demo-files/frame_2133.jpg"
@@ -13,8 +14,10 @@ interface CanvasProps {
   setNames: (names: string[]) => void
   images: string[]
   setImages: (images: string[]) => void
-  annotations: number[][][]
-  setAnnotations: (annotations: number[][][]) => void
+  imageDimensions: dimensions[]
+  setImageDimensions: (dimensions: dimensions[]) => void
+  annotations: boundingBox[][]
+  setAnnotations: (annotations: boundingBox[][]) => void
   currIdx: number
 }
 
@@ -25,20 +28,12 @@ function Canvas({
   setNames,
   images,
   setImages,
+  imageDimensions,
+  setImageDimensions,
   annotations,
   setAnnotations,
   currIdx,
 }: CanvasProps) {
-  const [viewBox, setViewBox] = useState<string>("0 0 0 0")
-
-  useEffect(() => {
-    const img = new Image()
-    img.src = images[currIdx]
-    img.onload = () => {
-      setViewBox(`0 0 ${img.width} ${img.height}`)
-    }
-  }, [images[currIdx]])
-
   const onDemoClick = () => {
     setNames([
       "frame_1778",
@@ -56,26 +51,29 @@ function Canvas({
       frame_2432,
       frame_2697,
     ])
+    setImageDimensions([
+      { width: 720, height: 480 },
+      { width: 720, height: 480 },
+      { width: 720, height: 480 },
+      { width: 720, height: 480 },
+      { width: 720, height: 480 },
+      { width: 720, height: 480 },
+      { width: 720, height: 480 },
+    ])
     setAnnotations([
-      [[396, 88, 16, 15]],
-      [[531, 234, 34, 40]],
-      [[]],
-      [[204, 240, 44, 56]],
-      [[226, 173, 89, 113]],
-      [[210, 286, 193, 190]],
+      [{ id: crypto.randomUUID(), x: 396, y: 88, width: 16, height: 15 }],
+      [{ id: crypto.randomUUID(), x: 531, y: 234, width: 34, height: 40 }],
+      [],
+      [{ id: crypto.randomUUID(), x: 204, y: 240, width: 44, height: 56 }],
+      [{ id: crypto.randomUUID(), x: 226, y: 173, width: 89, height: 113 }],
+      [{ id: crypto.randomUUID(), x: 210, y: 286, width: 193, height: 190 }],
     ])
   }
   const [isDrawing, setIsDrawing] = useState(false)
-  const [startCoords, setStartCoords] = useState<{
-    x: number
-    y: number
-  } | null>(null)
+  const [startCoords, setStartCoords] = useState<coords | null>(null)
   const [draggedBoxIdx, setDraggedBoxIdx] = useState<number | null>(null)
   const [handle, setHandle] = useState<string | null>(null)
-  const [offset, setOffset] = useState<{
-    x: number
-    y: number
-  } | null>(null)
+  const [offset, setOffset] = useState<coords | null>(null)
 
   const getMouseCoords = (e: React.MouseEvent) => {
     const svg = e.currentTarget as SVGSVGElement
@@ -87,41 +85,65 @@ function Canvas({
     }
   }
 
-  const isInbox = (x: number, y: number, box: number[]): boolean => {
+  const isInbox = (x: number, y: number, box: boundingBox): boolean => {
     return (
-      x >= box[0] && x <= box[0] + box[2] && y >= box[1] && y <= box[1] + box[3]
+      x >= box.x &&
+      x <= box.x + box.width &&
+      y >= box.y &&
+      y <= box.y + box.height
     )
   }
 
-  const getHandle = (x: number, y: number, box: number[]) => {
-    const [bx, by, bw, bh] = box
+  const getHandle = (x: number, y: number, box: boundingBox) => {
     const threshold = 5 // sensitivity for grabbing handles
 
-    if (Math.abs(x - bx) < threshold && Math.abs(y - by) < threshold) {
+    if (Math.abs(x - box.x) < threshold && Math.abs(y - box.y) < threshold) {
       return "top-left"
     }
-    if (Math.abs(x - (bx + bw)) < threshold && Math.abs(y - by) < threshold) {
+    if (
+      Math.abs(x - (box.x + box.width)) < threshold &&
+      Math.abs(y - box.y) < threshold
+    ) {
       return "top-right"
     }
-    if (Math.abs(x - bx) < threshold && Math.abs(y - (by + bh)) < threshold) {
+    if (
+      Math.abs(x - box.x) < threshold &&
+      Math.abs(y - (box.y + box.height)) < threshold
+    ) {
       return "bottom-left"
     }
     if (
-      Math.abs(x - (bx + bw)) < threshold &&
-      Math.abs(y - (by + bh)) < threshold
+      Math.abs(x - (box.x + box.width)) < threshold &&
+      Math.abs(y - (box.y + box.height)) < threshold
     ) {
       return "bottom-right"
     }
-    if (Math.abs(y - by) < threshold && x >= bx && x <= bx + bw) {
+    if (
+      Math.abs(y - box.y) < threshold &&
+      x >= box.x &&
+      x <= box.x + box.width
+    ) {
       return "top"
     }
-    if (Math.abs(y - (by + bh)) < threshold && x >= bx && x <= bx + bw) {
+    if (
+      Math.abs(y - (box.y + box.height)) < threshold &&
+      x >= box.x &&
+      x <= box.x + box.width
+    ) {
       return "bottom"
     }
-    if (Math.abs(x - bx) < threshold && y >= by && y <= by + bh) {
+    if (
+      Math.abs(x - box.x) < threshold &&
+      y >= box.y &&
+      y <= box.y + box.height
+    ) {
       return "left"
     }
-    if (Math.abs(x - (bx + bw)) < threshold && y >= by && y <= by + bh) {
+    if (
+      Math.abs(x - (box.x + box.width)) < threshold &&
+      y >= box.y &&
+      y <= box.y + box.height
+    ) {
       return "right"
     }
     if (isInbox(x, y, box)) {
@@ -130,69 +152,75 @@ function Canvas({
     return null
   }
 
-  const editAtCoords = (x: number, y: number) => {
+  const editAt = (x: number, y: number) => {
     if (!handle || draggedBoxIdx === null || offset === null) {
       return
     }
 
     const newAnnotations = [...annotations]
-    const box = [...newAnnotations[currIdx][draggedBoxIdx]]
+    const newBox = newAnnotations[currIdx][draggedBoxIdx]
 
     if (handle === "top-left") {
-      box[2] = box[2] + (box[0] - x)
-      box[3] = box[3] + (box[1] - y)
-      box[0] = x
-      box[1] = y
+      newBox.width = newBox.width + (newBox.x - x)
+      newBox.height = newBox.height + (newBox.y - y)
+      newBox.x = x
+      newBox.y = y
     } else if (handle === "top-right") {
-      box[2] = x - box[0]
-      box[3] = box[3] + (box[1] - y)
-      box[1] = y
+      newBox.width = x - newBox.x
+      newBox.height = newBox.height + (newBox.y - y)
+      newBox.y = y
     } else if (handle === "bottom-left") {
-      box[2] = box[2] + (box[0] - x)
-      box[3] = y - box[1]
-      box[0] = x
+      newBox.width = newBox.width + (newBox.x - x)
+      newBox.height = y - newBox.y
+      newBox.x = x
     } else if (handle === "bottom-right") {
-      box[2] = x - box[0]
-      box[3] = y - box[1]
+      newBox.width = x - newBox.x
+      newBox.height = y - newBox.y
     } else if (handle === "top") {
-      box[3] = box[3] + (box[1] - y)
-      box[1] = y
+      newBox.height = newBox.height + (newBox.y - y)
+      newBox.y = y
     } else if (handle === "bottom") {
-      box[3] = y - box[1]
+      newBox.height = y - newBox.y
     } else if (handle === "left") {
-      box[2] = box[2] + (box[0] - x)
-      box[0] = x
+      newBox.width = newBox.width + (newBox.x - x)
+      newBox.x = x
     } else if (handle === "right") {
-      box[2] = x - box[0]
+      newBox.width = x - newBox.x
     } else if (handle === "middle") {
-      box[0] = x - offset.x
-      box[1] = y - offset.y
+      newBox.x = x - offset.x
+      newBox.y = y - offset.y
     }
 
-    newAnnotations[currIdx][draggedBoxIdx] = box
     setAnnotations(newAnnotations)
   }
 
-  const drawAtCoords = (x: number, y: number) => {
+  const drawAt = (x: number, y: number) => {
     if (isDrawing && startCoords) {
       const newAnnotations = [...annotations]
-      newAnnotations[currIdx].splice(newAnnotations[currIdx].length - 1, 1, [
-        Math.min(x, startCoords.x),
-        Math.min(y, startCoords.y),
-        Math.abs(x - startCoords.x),
-        Math.abs(y - startCoords.y),
-      ])
+      newAnnotations[currIdx].splice(newAnnotations[currIdx].length - 1, 1, {
+        id: annotations[currIdx][annotations[currIdx].length - 1].id,
+        x: Math.min(x, startCoords.x),
+        y: Math.min(y, startCoords.y),
+        width: Math.abs(x - startCoords.x),
+        height: Math.abs(y - startCoords.y),
+      })
       setAnnotations(newAnnotations)
     } else {
       const newAnnotations = [...annotations]
-      newAnnotations[currIdx].push([x, y, 0, 0])
+      newAnnotations[currIdx].push({
+        id: crypto.randomUUID(),
+        x: x,
+        y: y,
+        width: 0,
+        height: 0,
+      })
       setAnnotations(newAnnotations)
       setIsDrawing(true)
       setStartCoords({ x, y })
     }
   }
 
-  const removeAtCoords = (x: number, y: number) => {
+  const removeAt = (x: number, y: number) => {
     const idxToRemove = annotations[currIdx].findIndex((box) =>
       isInbox(x, y, box),
     )
@@ -212,14 +240,14 @@ function Canvas({
         if (newHandle !== null) {
           setDraggedBoxIdx(annotations[currIdx].indexOf(box))
           setHandle(newHandle)
-          setOffset({ x: x - box[0], y: y - box[1] })
+          setOffset({ x: x - box.x, y: y - box.y })
           return
         }
       }
 
-      drawAtCoords(x, y)
+      drawAt(x, y)
     } else if (e.button === 2) {
-      removeAtCoords(x, y)
+      removeAt(x, y)
     }
   }
 
@@ -228,12 +256,12 @@ function Canvas({
 
     if (e.button === 0) {
       if (handle && draggedBoxIdx !== null && offset !== null) {
-        editAtCoords(x, y)
+        editAt(x, y)
       } else if (isDrawing && startCoords) {
-        drawAtCoords(x, y)
+        drawAt(x, y)
       }
     } else if (e.button === 2) {
-      removeAtCoords(x, y)
+      removeAt(x, y)
     }
   }
 
@@ -250,22 +278,22 @@ function Canvas({
   }
 
   const drawAnnotations = () => {
-    return annotations[currIdx].map(([x, y, width, height]) => (
-      <g key={`${x}-${y}-${width}-${height}`}>
+    return annotations[currIdx].map((box) => (
+      <g key={box.id}>
         <rect
-          width={width}
-          height={height}
-          x={x}
-          y={y}
+          width={box.width}
+          height={box.height}
+          x={box.x}
+          y={box.y}
           fill="transparent"
           stroke="#000000"
           strokeWidth="0.4%"
         />
         <rect
-          width={width}
-          height={height}
-          x={x}
-          y={y}
+          width={box.width}
+          height={box.height}
+          x={box.x}
+          y={box.y}
           fill="transparent"
           stroke="#00ff00"
           strokeWidth="0.2%"
@@ -281,13 +309,16 @@ function Canvas({
       {names[currIdx] ? (
         <svg
           className="h-full w-full hover:cursor-crosshair"
-          viewBox={viewBox}
+          viewBox={`0 0 ${imageDimensions[currIdx].width} ${imageDimensions[currIdx].height}`}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
           onContextMenu={onContextMenu}
         >
-          <image href={images[currIdx]} className="h-full w-full" />
+          <image
+            href={images[currIdx] ? images[currIdx] : undefined}
+            className="h-full w-full"
+          />
           {drawAnnotations()}
         </svg>
       ) : (

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import JSZip from "jszip"
 import { saveAs } from "file-saver"
+import type { boundingBox, dimensions } from "../types/index"
 
 interface ExplorerProps {
   className?: string
@@ -9,8 +10,10 @@ interface ExplorerProps {
   setNames: (names: string[]) => void
   images: string[]
   setImages: (images: string[]) => void
-  annotations: number[][][]
-  setAnnotations: (annotations: number[][][]) => void
+  imageDimensions: dimensions[]
+  setImageDimensions: (imageDimensions: dimensions[]) => void
+  annotations: boundingBox[][]
+  setAnnotations: (annotations: boundingBox[][]) => void
   currIdx: number
   setCurrIdx: (currIdx: number) => void
 }
@@ -22,6 +25,8 @@ function Explorer({
   setNames,
   images,
   setImages,
+  imageDimensions,
+  setImageDimensions,
   annotations,
   setAnnotations,
   currIdx,
@@ -35,27 +40,40 @@ function Explorer({
     })
   }, [currIdx])
 
+  const getImageDimensions = (image: string) => {
+    return new Promise<dimensions>((resolve) => {
+      const img = new Image()
+      img.src = image
+      img.onload = () => {
+        resolve({ width: img.width, height: img.height })
+      }
+    })
+  }
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files: File[] = Array.from(e.target.files)
-      const newNamesToContent = new Map<string, [string, number[][]]>()
+    const files = e.target.files
+    if (files) {
+      const newNamesToContent = new Map<
+        string,
+        [string, dimensions, boundingBox[]]
+      >()
 
       for (const file of files) {
         const newName = file.name.replace(/\.[^.]*$/, "")
         if (!newNamesToContent.has(newName)) {
-          newNamesToContent.set(newName, ["", []]) // TODO: add default image and change missing image checks
+          newNamesToContent.set(newName, ["", { width: 0, height: 0 }, []]) // TODO: add default image and change missing image checks
         }
 
         if (file.type.startsWith("image/")) {
           if (newNamesToContent.get(newName)?.[0]) {
             console.log(`${newName} already has an image`)
           } else {
-            newNamesToContent
-              .get(newName)
-              ?.splice(0, 1, URL.createObjectURL(file))
+            const dataURL = URL.createObjectURL(file)
+            const dimensions = await getImageDimensions(dataURL)
+            newNamesToContent.get(newName)?.splice(0, 2, dataURL, dimensions)
           }
         } else if (file.type.startsWith("text/plain")) {
-          if ((newNamesToContent.get(newName)?.[1] ?? []).length > 0) {
+          if ((newNamesToContent.get(newName)?.[2] ?? []).length > 0) {
             console.log(`${newName} already has an annotation`)
           } else {
             const text = await file.text()
@@ -63,21 +81,33 @@ function Explorer({
               .trim()
               .split("\n")
               .map((line) => {
-                const box = line.trim().split(/\s+/).map(Number)
-                if (box.length !== 4 || box.some((n) => isNaN(n))) {
+                const xywh = line.trim().split(/\s+/).map(Number)
+                if (xywh.length !== 4 || xywh.some((n) => isNaN(n))) {
                   console.log(`${newName} has invalid annotation: ${line}`)
-                  return []
+                  return null
                 }
-                return box
+                return {
+                  id: crypto.randomUUID(),
+                  x: xywh[0],
+                  y: xywh[1],
+                  width: xywh[2],
+                  height: xywh[3],
+                }
               })
-              .filter((box) => box.length > 0)
-            newNamesToContent.get(newName)?.splice(1, 1, annotation)
+              .filter((box) => box !== null)
+            newNamesToContent.get(newName)?.splice(2, 1, annotation)
           }
         }
       }
 
-      const namesToContent = new Map<string, [string, number[][]]>(
-        names.map((name, i) => [name, [images[i], annotations[i]]]),
+      const namesToContent = new Map<
+        string,
+        [string, dimensions, boundingBox[]]
+      >(
+        names.map((name, i) => [
+          name,
+          [images[i], imageDimensions[i], annotations[i]],
+        ]),
       )
 
       for (const [name, content] of newNamesToContent) {
@@ -90,14 +120,14 @@ function Explorer({
           if (namesToContent.get(name)?.[0]) {
             console.log(`${name} already has an image`)
           } else {
-            namesToContent.get(name)?.splice(0, 1, content[0])
+            namesToContent.get(name)?.splice(0, 2, content[0], content[1])
           }
         }
-        if (content[1]) {
-          if ((namesToContent.get(name)?.[1] ?? []).length > 0) {
+        if (content[2]) {
+          if ((namesToContent.get(name)?.[2] ?? []).length > 0) {
             console.log(`${name} already has an annotation`)
           } else {
-            namesToContent.get(name)?.splice(1, 1, content[1])
+            namesToContent.get(name)?.splice(2, 1, content[2])
           }
         }
       }
@@ -109,42 +139,39 @@ function Explorer({
       const sortedNamesToContent = Array.from(namesToContent.entries()).sort(
         (a, b) => collator.compare(a[0], b[0]),
       )
+
       setNames(sortedNamesToContent.map((entry) => entry[0]))
       setImages(sortedNamesToContent.map((entry) => entry[1][0]))
-      setAnnotations(sortedNamesToContent.map((entry) => entry[1][1]))
+      setImageDimensions(sortedNamesToContent.map((entry) => entry[1][1]))
+      setAnnotations(sortedNamesToContent.map((entry) => entry[1][2]))
     }
   }
 
   const xywhToYolo = (idx: number) => {
-    return new Promise<string[]>((resolve) => {
-      const img = new Image()
-      img.src = images[idx]
-      img.onload = () => {
-        const yoloAnnotation = annotations[idx].map(([x, y, width, height]) => {
-          const centerX = x + width / 2
-          const centerY = y + height / 2
-          const normalizedCenterX = centerX / img.width
-          const normalizedCenterY = centerY / img.height
-          const normalizedWidth = width / img.width
-          const normalizedHeight = height / img.height
-          return `0 ${normalizedCenterX} ${normalizedCenterY} ${normalizedWidth} ${normalizedHeight}`
-        })
-        resolve(yoloAnnotation)
-      }
+    const yoloAnnotation = annotations[idx].map((box) => {
+      const centerX = box.x + box.width / 2
+      const centerY = box.y + box.height / 2
+      const normalizedCenterX = centerX / imageDimensions[idx].width
+      const normalizedCenterY = centerY / imageDimensions[idx].height
+      const normalizedWidth = box.width / imageDimensions[idx].width
+      const normalizedHeight = box.height / imageDimensions[idx].height
+      return `0 ${normalizedCenterX} ${normalizedCenterY} ${normalizedWidth} ${normalizedHeight}`
     })
+    return yoloAnnotation
   }
 
-  const handleExport = async () => {
+  const handleExport = () => {
     const zip = new JSZip()
     for (const [i, name] of names.entries()) {
-      const yoloAnnotation = await xywhToYolo(i)
+      const yoloAnnotation = xywhToYolo(i)
       const blob = new Blob([yoloAnnotation.join("\n")], {
         type: "text/plain",
       })
       zip.file(`labels/${name}.txt`, blob)
     }
-    const zipBlob = await zip.generateAsync({ type: "blob" })
-    saveAs(zipBlob, "labels.zip")
+    zip
+      .generateAsync({ type: "blob" })
+      .then((blob) => saveAs(blob, "labels.zip"))
   }
 
   return (
