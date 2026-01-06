@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { boundingBox, dimensions, coords } from "../types/index"
 import frame_1778 from "../assets/demo-files/frame_1778.jpg"
 import frame_2087 from "../assets/demo-files/frame_2087.jpg"
@@ -34,6 +34,15 @@ function Canvas({
   setAnnotations,
   currIdx,
 }: CanvasProps) {
+  useEffect(() => {
+    new Image().src = frame_1778
+    new Image().src = frame_2087
+    new Image().src = frame_2133
+    new Image().src = frame_2210
+    new Image().src = frame_2432
+    new Image().src = frame_2697
+  }, [])
+
   const onDemoClick = () => {
     setNames([
       "frame_1778",
