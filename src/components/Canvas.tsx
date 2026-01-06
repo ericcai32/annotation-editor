@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import type { boundingBox, dimensions, coords } from "../types/index"
 import frame_1778 from "../assets/demo-files/frame_1778.jpg"
 import frame_2087 from "../assets/demo-files/frame_2087.jpg"
@@ -83,6 +83,12 @@ function Canvas({
       x: (e.clientX - CTM.e) / CTM.a,
       y: (e.clientY - CTM.f) / CTM.d,
     }
+  }
+
+  const clampMouseCoords = (coords: coords) => {
+    coords.x = Math.max(0, Math.min(coords.x, imageDimensions[currIdx].width))
+    coords.y = Math.max(0, Math.min(coords.y, imageDimensions[currIdx].height))
+    return coords
   }
 
   const isInbox = (x: number, y: number, box: boundingBox): boolean => {
@@ -232,7 +238,7 @@ function Canvas({
   }
 
   const onMouseDown = (e: React.MouseEvent) => {
-    const { x, y } = getMouseCoords(e)
+    const { x, y } = clampMouseCoords(getMouseCoords(e))
 
     if (e.button === 0) {
       for (const box of annotations[currIdx]) {
@@ -252,7 +258,7 @@ function Canvas({
   }
 
   const onMouseMove = (e: React.MouseEvent) => {
-    const { x, y } = getMouseCoords(e)
+    const { x, y } = clampMouseCoords(getMouseCoords(e))
 
     if (e.button === 0) {
       if (handle && draggedBoxIdx !== null && offset !== null) {
