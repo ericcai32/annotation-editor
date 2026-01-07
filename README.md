@@ -1,6 +1,6 @@
-# Image Annotation Editor for Computer Vision
+# Computer Vision Annotation Editor
 
-A web-based image annotation editor for computer vision built with React and Tailwind CSS
+A web-based computer vision annotation editor built with React, Tailwind CSS, and Firebase
 
 ## Demo
 
